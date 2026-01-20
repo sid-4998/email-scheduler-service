@@ -1,0 +1,14 @@
+model EmailSender {
+  id            String   @id @default(uuid())
+  name          String
+  email         String
+  smtpUsername  String
+  smtpPassword  String
+  smtpHost      String
+  smtpPort      Int
+  hourlyLimit   Int
+
+  createdAt     DateTime @default(now())
+
+  scheduledEmails ScheduledEmail[]
+}

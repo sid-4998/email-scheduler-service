@@ -6,3 +6,13 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+enum EmailStatus {
+  PENDING
+  SCHEDULED
+  SENT
+  FAILED
+  DELAYED
+  CANCELLED
+}
+
