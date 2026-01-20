@@ -8,62 +8,74 @@ datasource db {
 }
 
 model EmailSender {
-  id            String   @id @default(uuid())
-  name          String
-  email         String
-  smtpUsername  String
-  smtpPassword  String
-  smtpHost      String
-  smtpPort      Int
-  hourlyLimit   Int
+  id             String   @id @default(uuid())
+  name           String
+  email          String
 
-  createdAt     DateTime @default(now())
+  smtpUsername   String
+  smtpPassword   String
+  smtpHost       String
+  smtpPort       Int
+
+  defaultHourlyLimit Int
+
+  createdAt      DateTime @default(now())
 
   scheduledEmails ScheduledEmail[]
 }
 
 model ScheduledEmail {
   id               String   @id @default(uuid())
+
   senderId         String
+  sender           EmailSender @relation(fields: [senderId], references: [id])
 
   to               String
   subject          String
   body             String
 
   scheduledFor     DateTime
+  sentAt           DateTime?
+
   status           EmailStatus @default(PENDING)
 
+  hourlyLimit      Int
+  delayBetweenMs   Int
+
+  attemptCount     Int      @default(0)
   lastError        String?
-  retryCount       Int @default(0)
+
+  messageId        String?
+  previewUrl       String?
 
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
-
-  sender           EmailSender @relation(fields: [senderId], references: [id])
 
   sendLogs         EmailSendLog[]
 
   @@index([scheduledFor])
   @@index([status])
+  @@index([senderId, scheduledFor])
 }
 
 model EmailSendLog {
-  id              String   @id @default(uuid())
-  scheduledEmailId String
-  sentAt          DateTime
-  success         Boolean
-  errorMessage    String?
+  id                String   @id @default(uuid())
 
-  scheduledEmail  ScheduledEmail @relation(fields: [scheduledEmailId], references: [id], onDelete: Cascade)
+  scheduledEmailId  String
+  scheduledEmail    ScheduledEmail @relation( fields: [scheduledEmailId], references: [id], onDelete: Cascade)
+
+  sentAt            DateTime
+  success           Boolean
+  errorMessage      String?
+  providerMessageId String?
+
+  createdAt         DateTime @default(now())
 }
 
 enum EmailStatus {
   PENDING
-  SCHEDULED
+  PROCESSING
+  DELAYED
   SENT
   FAILED
-  DELAYED
-  CANCELLED
 }
-
-
