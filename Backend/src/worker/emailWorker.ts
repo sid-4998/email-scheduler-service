@@ -19,7 +19,7 @@ export const emailWorker = new Worker(
     const locked = await prisma.scheduledEmail.updateMany({
       where: {
         id: email.id,
-        status: { in: ["PENDING", "FAILED"] },
+        status: { in: ["PENDING", "FAILED", "DELAYED"] },
       },
       data: {
         status: "PROCESSING",
@@ -51,7 +51,13 @@ export const emailWorker = new Worker(
         return;
       }
 
-      await sendEmail(email);
+      const result = await sendEmail(email);
+
+      if (email.delayBetweenMs > 0) {
+        await new Promise(res =>
+          setTimeout(res, email.delayBetweenMs)
+        );
+      }
 
       await prisma.$transaction([
         prisma.scheduledEmail.update({
@@ -59,6 +65,8 @@ export const emailWorker = new Worker(
           data: {
             status: "SENT",
             sentAt: new Date(),
+            messageId: result.messageId,
+            previewUrl: result.previewUrl,
           },
         }),
         prisma.emailSendLog.create({
@@ -66,15 +74,17 @@ export const emailWorker = new Worker(
             scheduledEmailId: email.id,
             sentAt: new Date(),
             success: true,
+            providerMessageId: result.messageId,
           },
         }),
       ]);
-    } catch (err) {
+    } catch (err: any) {
 
         await prisma.scheduledEmail.update({
           where: { id: email.id },
           data: {
             status: "FAILED",
+            lastError: err.message,
           },
         });
 
