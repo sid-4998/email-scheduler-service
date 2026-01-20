@@ -16,10 +16,12 @@
     "bullmq": "^5.66.5",
     "express": "^5.2.1",
     "ioredis": "^5.9.1",
+    "nodemailer": "^7.0.12",
     "pg": "^8.17.1"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
+    "@types/nodemailer": "^7.0.5",
     "@types/pg": "^8.16.0",
     "prisma": "^7.2.0"
   },
