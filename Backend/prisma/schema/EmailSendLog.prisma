@@ -1,9 +1,0 @@
-model EmailSendLog {
-  id              String   @id @default(uuid())
-  scheduledEmailId String
-  sentAt          DateTime
-  success         Boolean
-  errorMessage    String?
-
-  scheduledEmail  ScheduledEmail @relation(fields: [scheduledEmailId], references: [id], onDelete: Cascade)
-}

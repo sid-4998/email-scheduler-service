@@ -1,2 +1,0 @@
--- CreateEnum
-CREATE TYPE "EmailStatus" AS ENUM ('PENDING', 'SCHEDULED', 'SENT', 'FAILED', 'DELAYED', 'CANCELLED');
